@@ -3,17 +3,17 @@ import java.util.List;
 public class Snake {
     private List<Position> body;
     private int direction;
-    // 下一次移动方向（解决快速按键时的方向冲突）
     private int nextDirection;
 
     public Snake() {
-        // 初始化蛇的初始位置（横向排列3个格子）
+        // initiate the snake with 4 boxes
         body = new ArrayList<>();
-        body.add(new Position(15, 15)); // 蛇头
+        body.add(new Position(15, 15)); // head
         body.add(new Position(14, 15));
         body.add(new Position(13, 15));
+        body.add(new Position(12, 15));
 
-        // 初始方向向右
+        // direction begins on right
         direction = GameConstants.RIGHT;
         nextDirection = direction;
     }
@@ -23,7 +23,7 @@ public class Snake {
     }
 
     public void setDirection(int newDirection) {
-        // 防止180度掉头（例如当前向上时不能直接向下）
+        // ban changing directions to 180 degrees
         if (Math.abs(newDirection - direction) != 2) {
             nextDirection = newDirection;
         }
@@ -52,8 +52,8 @@ public class Snake {
     }
 
     public void grow() {
-        // 移动时已经添加了新头部，这里不需要额外操作
-        // （正常移动后会移除尾部，grow()的作用是让尾部保留）
+        // As we add new head in move method, no more operation is needed.
+        // grow method keeps the tail when eat a food so that snake gets longer in fact
     }
 
     public void removeTail(){

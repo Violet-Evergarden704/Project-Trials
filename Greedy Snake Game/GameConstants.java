@@ -4,7 +4,7 @@ public class GameConstants {
     public static final int HEIGHT = 30;
     public static final int WINDOW_WIDTH = WIDTH * SIZE;
     public static final int WINDOW_HEIGHT = WIDTH * SIZE;
-    public static final int SPEED = 150;
+    public static final int SPEED = 50;
     public static final int UP = 0;
     public static final int RIGHT = 1;
     public static final int DOWN = 2;

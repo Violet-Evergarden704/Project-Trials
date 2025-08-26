@@ -9,38 +9,61 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
     private Snake snake;
     private Food food;
     private Timer timer;
+    private Timer clockTimer;
     private boolean isGameOver;
+    private boolean isPaused;
+    private int secondsPlayed;
 
     public GamePanel() {
         // 初始化游戏元素
         snake = new Snake();
         food = new Food();
-        food.generateNewFood(snake.getBody()); // 生成初始食物
+        food.generateNewFood(snake.getBody()); // generate initial food
 
-        // 初始化计时器（控制蛇的移动速度）
+        // initiate timer to control speed
         timer = new Timer(GameConstants.SPEED, this);
         timer.start();
+        // Clock timer updates every second (1000ms)
+        clockTimer = new Timer(1000, new ClockActionListener());
+        clockTimer.start();
 
-        // 初始化面板属性
-        setBackground(Color.BLACK); // 黑色背景
+        // initial panels
+        setBackground(Color.BLACK); // black background
         setPreferredSize(new Dimension(
                 GameConstants.WINDOW_WIDTH,
                 GameConstants.WINDOW_HEIGHT
         ));
-        setFocusable(true); // 允许接收键盘事件
-        addKeyListener(this); // 添加键盘监听器
+        setFocusable(true);
+        addKeyListener(this);
 
         isGameOver = false;
+        isPaused = false;
+        secondsPlayed = 0;
+    }
+    private class ClockActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // Only increment time when game is active (not paused and not over)
+            if (!isPaused && !isGameOver) {
+                secondsPlayed++;
+            }
+        }
+    }
+    // Convert seconds to MM:SS format
+    private String formatTime(int seconds) {
+        int minutes = seconds / 60;
+        int secs = seconds % 60;
+        return String.format("%02d:%02d", minutes, secs);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // 绘制蛇
+        // paint a snake
         g.setColor(Color.GREEN);
         for (Position p : snake.getBody()) {
-            // 绘制每个蛇身格子（留1像素间隙，看起来像一节一节）
+            // paint the body of snake with 1 pixel gap to make its body clearer
             g.fillRect(
                     p.getX() * GameConstants.SIZE,
                     p.getY() * GameConstants.SIZE,
@@ -49,8 +72,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
             );
         }
 
-        // 绘制食物
-        g.setColor(Color.RED);
+        // paint one food
+        g.setColor(Color.RED); // food in red
         Position foodPos = food.getPosition();
         g.fillRect(
                 foodPos.getX() * GameConstants.SIZE,
@@ -59,31 +82,65 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
                 GameConstants.SIZE - 1
         );
 
-        // 游戏结束时显示提示
+        // Draw play time in top-left corner
+        g.setColor(Color.CYAN);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Time: " + formatTime(secondsPlayed), 10, 20);
+
+        // display info when game over
         if (isGameOver) {
+            g.setColor(new Color(0, 0, 0, 180));
+            g.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 24));
-            g.drawString("游戏结束！按R键重新开始", 50, 300);
+            // get position of words to make it in middle
+            String message = "Game Over. Press 'R' to Restart.";
+            FontMetrics metrics = g.getFontMetrics();
+            int x = (GameConstants.WINDOW_WIDTH - metrics.stringWidth(message)) / 2;
+            int y = (GameConstants.WINDOW_HEIGHT - metrics.getHeight()) / 2 + metrics.getAscent();
+
+            g.drawString(message, x, y);
+        }
+
+        else if (isPaused) {
+            g.setColor(new Color(0, 0, 0, 150));
+            g.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
+
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+
+            String message = "Game Paused.";
+            FontMetrics metrics = g.getFontMetrics();
+            int x = (GameConstants.WINDOW_WIDTH - metrics.stringWidth(message)) / 2;
+            int y = (GameConstants.WINDOW_HEIGHT - metrics.getHeight()) / 2 + metrics.getAscent();
+
+            g.drawString(message, x, y);
+
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            String subMessage = "Press 'P' to resume.";
+            int subX = (GameConstants.WINDOW_WIDTH - metrics.stringWidth(subMessage)) / 2;
+            int subY = y + 30;
+            g.drawString(subMessage, subX, subY);
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!isGameOver) {
-            snake.move(); // 移动蛇
-            checkCollisions(); // 检查碰撞
-            checkFoodEaten(); // 检查是否吃到食物
+        if (!isGameOver && !isPaused) {
+            snake.move(); // move the snake
+            checkCollisions();
+            checkFoodEaten();
         }
-        repaint(); // 重绘画面
+        repaint();
     }
     private void checkFoodEaten() {
         if (snake.getHead().equals(food.getPosition())) {
-            // 吃到食物，蛇增长（不移除尾部）
+            // when eat a food, body grows
             snake.grow();
-            // 生成新食物
+            // generate a new one
             food.generateNewFood(snake.getBody());
         } else {
-            // 没吃到食物，移除尾部（保持长度不变）
+            // when not eat, remove 1 tail to make total length the same and step 1 box forward
             snake.removeTail();
         }
     }
@@ -91,14 +148,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
     private void checkCollisions() {
         Position head = snake.getHead();
 
-        // 撞墙检测（超出游戏区域）
+        // whether hits the edge
         if (head.getX() < 0 || head.getX() >= GameConstants.WIDTH ||
                 head.getY() < 0 || head.getY() >= GameConstants.HEIGHT) {
             isGameOver = true;
             timer.stop();
         }
 
-        // 撞到自己检测
+        // whether hits itself
         for (int i = 1; i < snake.getBody().size(); i++) {
             if (head.equals(snake.getBody().get(i))) {
                 isGameOver = true;
@@ -112,20 +169,30 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        // 控制方向
-        if (key == KeyEvent.VK_UP) {
+        // directions
+        if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             snake.setDirection(GameConstants.UP);
-        } else if (key == KeyEvent.VK_RIGHT) {
+        } else if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) {
             snake.setDirection(GameConstants.RIGHT);
-        } else if (key == KeyEvent.VK_DOWN) {
+        } else if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             snake.setDirection(GameConstants.DOWN);
-        } else if (key == KeyEvent.VK_LEFT) {
+        } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
             snake.setDirection(GameConstants.LEFT);
         }
 
-        // 按R键重新开始游戏
+        // press r to restart
         if (key == KeyEvent.VK_R && isGameOver) {
             restartGame();
+        }
+
+        // press p to pause
+        if (key == KeyEvent.VK_P) {
+            pauseGame();
+        }
+
+        // press esc to exit
+        if (key == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
         }
     }
     private void restartGame() {
@@ -133,6 +200,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
         food.generateNewFood(snake.getBody());
         isGameOver = false;
         timer.start();
+    }
+
+    private void pauseGame() {
+        isPaused = !isPaused;
     }
 
     @Override

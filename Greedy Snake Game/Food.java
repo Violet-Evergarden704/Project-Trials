@@ -18,12 +18,12 @@ public class Food {
         boolean onSnake;
 
         do {
-            // 随机生成坐标（在游戏区域内）
+            // randomly generate in the game area
             x = random.nextInt(GameConstants.WIDTH);
             y = random.nextInt(GameConstants.HEIGHT);
             position = new Position(x, y);
 
-            // 检查是否在蛇身上
+            // check if it is on snake body
             onSnake = false;
             for (Position p : snakeBody) {
                 if (position.equals(p)) {
@@ -31,6 +31,6 @@ public class Food {
                     break;
                 }
             }
-        } while (onSnake); // 如果在蛇身上，就重新生成
+        } while (onSnake); // regenerate if on body
     }
 }
