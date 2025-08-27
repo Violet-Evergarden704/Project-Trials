@@ -8,14 +8,15 @@ In future will be rewritten without ai help.
 - 'R' key to restart the game
 - 'P' key to pause the game
 - 'Esc' key to exit the game
+- A timer to record the time played
+- A score system
 
 **TODO:**
-- Add score system
 - Add walls
 - Enable to cross the edges of the screen
 - Add levels(change speed, add walls, etc.)
 - Add sound effects
-
+- Improve graphics
 ## Versions
 - 1.0: 26/08/2025, first version, with basic functions.
-- 1.1: 26/08/2025, add instructions when game over, and support 'P' to pause the game. Also add wasd to control the snake.
+- 1.1: 26/08/2025, add instructions when game over, and support 'P' to pause the game and 'Esc' to exit the game. Also add wasd to control the snake, and a timer.

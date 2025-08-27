@@ -9,14 +9,17 @@ In future will be rewritten without ai help.
 - 'P' key to pause the game
 - 'Esc' key to exit the game
 - A timer to record the time played
+- A score system
+- Level system to change speed, 4 levels available
 
 **TODO:**
-- Add score system
 - Add walls
 - Enable to cross the edges of the screen
 - Add levels(change speed, add walls, etc.)
 - Add sound effects
-
+- Improve graphics
+- Instruction button
 ## Versions
 - 1.0: 26/08/2025, first version, with basic functions.
 - 1.1: 26/08/2025, add instructions when game over, and support 'P' to pause the game and 'Esc' to exit the game. Also add wasd to control the snake, and a timer.
+- 1.2: 27/08/2025, add score system, and 4 levels available.

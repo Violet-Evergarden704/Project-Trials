@@ -13,22 +13,27 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
     private boolean isGameOver;
     private boolean isPaused;
     private int secondsPlayed;
+    private int points;
+    private Level currentLevel;
+
 
     public GamePanel() {
         // 初始化游戏元素
         snake = new Snake();
         food = new Food();
+        points = 0;
+        currentLevel = checkLevel(points);
         food.generateNewFood(snake.getBody()); // generate initial food
 
         // initiate timer to control speed
-        timer = new Timer(GameConstants.SPEED, this);
+        timer = new Timer(currentLevel.getSpeed(), this);
         timer.start();
         // Clock timer updates every second (1000ms)
         clockTimer = new Timer(1000, new ClockActionListener());
         clockTimer.start();
 
         // initial panels
-        setBackground(Color.BLACK); // black background
+        setBackground(Color.PINK); // pink background
         setPreferredSize(new Dimension(
                 GameConstants.WINDOW_WIDTH,
                 GameConstants.WINDOW_HEIGHT
@@ -87,6 +92,13 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Time: " + formatTime(secondsPlayed), 10, 20);
 
+        // Display points under the timer
+        g.setColor(Color.CYAN);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Points: " + points, 10, 40);
+        g.drawString("Level: " + currentLevel.getLevelNumber(),
+                GameConstants.WINDOW_WIDTH - 100, 20);
+
         // display info when game over
         if (isGameOver) {
             g.setColor(new Color(0, 0, 0, 180));
@@ -137,6 +149,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
         if (snake.getHead().equals(food.getPosition())) {
             // when eat a food, body grows
             snake.grow();
+            points++;
+            currentLevel = checkLevel(points);
             // generate a new one
             food.generateNewFood(snake.getBody());
         } else {
@@ -163,6 +177,32 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
                 break;
             }
         }
+    }
+    public Level checkLevel(int points){
+        if (points >= 0 && points <= 5){
+            return setLevelNumber(0);
+        }
+        else if (points > 5 && points <= 10){
+            return setLevelNumber(1);
+        }
+        else if (points > 10 && points <= 15){
+            return setLevelNumber(2);
+        }
+        else{
+            return setLevelNumber(3);
+        }
+    }
+
+    public Level setLevelNumber(int levelNumber) {
+        try {
+            Level newLevel = Level.getLevelByNumber(levelNumber);
+            currentLevel = newLevel;
+            // 更新游戏计时器的速度（核心：等级决定蛇的移动速度）
+            System.out.println(GameConstants.LEVEL_CHANGED_MSG + currentLevel.getLevelNumber());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid level number:" + levelNumber);
+        }
+        return currentLevel;
     }
 
     @Override
